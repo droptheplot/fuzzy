@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS
+  tlds(
+        id SERIAL NOT NULL CONSTRAINT tlds_pk PRIMARY KEY,
+        value VARCHAR(255) NOT NULL
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS tlds_value_index ON tlds (value);

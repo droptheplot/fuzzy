@@ -1,0 +1,23 @@
+migrations = "filesystem:src/main/resources/migrations"
+
+default {
+  host = "localhost"
+  port = 8080
+  jdbc {
+    driver = "org.postgresql.Driver"
+    url = "jdbc:postgresql://localhost:5432/fuzzy"
+    user = "user"
+    pass = ""
+  }
+}
+
+test {
+  host = "localhost"
+  port = 8080
+  jdbc {
+    driver = "org.postgresql.Driver"
+    url = "jdbc:postgresql://localhost:5432/fuzzy_test"
+    user = "user"
+    pass = ""
+  }
+}
