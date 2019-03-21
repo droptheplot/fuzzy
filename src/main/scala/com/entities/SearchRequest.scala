@@ -1,3 +1,3 @@
 package com.entities
 
-final case class SearchRequest(text: String)
+final case class SearchRequest(query: String)

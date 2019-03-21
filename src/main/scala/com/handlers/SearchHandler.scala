@@ -6,7 +6,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.StandardRoute
 import cats.effect.IO
 import com.actors.DomainActor
-import com.entities.SearchResponse
+import com.entities.{SearchRequest, SearchResponse}
 import com.templates.{LayoutTemplate, SearchTemplate}
 import com.usecases.WhoisUsecase
 import com.utils.Iterable.Doall
@@ -14,7 +14,7 @@ import doobie.util.transactor.Transactor
 import org.slf4j.Logger
 
 object SearchHandler {
-  def apply(search: String, path: Uri.Path, servers: com.usecases.WhoisUsecase.ServerMap)(
+  def apply(searchRequest: SearchRequest, path: Uri.Path, servers: com.usecases.WhoisUsecase.ServerMap)(
       implicit logger: Logger,
       domainActor: ActorRef,
       db: Transactor.Aux[IO, Unit]): StandardRoute = {
@@ -22,7 +22,7 @@ object SearchHandler {
     logger.info(path.toString)
 
     val result: Seq[SearchResponse] = WhoisUsecase
-      .parseDomain(search, servers) match {
+      .parseDomain(searchRequest.query, servers) match {
       case Some(domain) =>
         logger.info(s"domain=$domain")
 
@@ -38,7 +38,7 @@ object SearchHandler {
       case None => Seq[SearchResponse]()
     }
 
-    val template = LayoutTemplate(SearchTemplate(search, result)).toString
+    val template = LayoutTemplate(SearchTemplate(searchRequest, result)).toString
 
     complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, template))
   }

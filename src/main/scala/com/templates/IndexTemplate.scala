@@ -11,7 +11,7 @@ object IndexTemplate {
       <("div", ("class", "col-6")) > (
         <("form", ("id", "search"), ("method", "get"), ("action", "/search")) > (
           <("div", ("class", "form-group")) > (
-            <("input", ("type", "text"), ("name", "search"), ("class", "form-control"), ("placeholder", "Search")) />,
+            <("input", ("type", "text"), ("name", "query"), ("class", "form-control"), ("placeholder", "Search")) />,
           ),
           <("div", ("class", "form-group text-center")) > (
             <("input", ("type", "submit"), ("class", "btn btn-primary mx-1"), ("value", "Search domains")) />,

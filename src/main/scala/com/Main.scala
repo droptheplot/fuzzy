@@ -7,7 +7,7 @@ import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
 import cats.effect.{ExitCode, IO, IOApp}
 import cats.syntax.all._
-import com.entities.Config
+import com.entities.{Config, SearchRequest}
 import com.handlers.{IndexHandler, SearchHandler}
 import com.usecases.WhoisUsecase
 import doobie.util.transactor.Transactor
@@ -51,7 +51,7 @@ object Main extends IOApp {
           }
         } ~ path("search") {
           get {
-            (parameter('search) & extractMatchedPath)(SearchHandler(_, _, servers))
+            (parameters('query).as(SearchRequest) & extractMatchedPath)(SearchHandler(_, _, servers))
           }
         }
 

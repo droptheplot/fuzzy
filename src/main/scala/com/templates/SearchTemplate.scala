@@ -1,6 +1,6 @@
 package com.templates
 
-import com.entities.SearchResponse
+import com.entities.{SearchRequest, SearchResponse}
 import com.usecases.WhoisUsecase.Status.Available
 import scala2html._
 import scala2html.Enrich._
@@ -8,16 +8,16 @@ import scala2html.Enrich._
 import scala.language.postfixOps
 
 object SearchTemplate {
-  def apply(search: String, result: Seq[SearchResponse]): Seq[Tag] = Seq[Tag](
+  def apply(searchRequest: SearchRequest, result: Seq[SearchResponse]): Seq[Tag] = Seq[Tag](
     <("form", ("id", "search"), ("method", "get"), ("action", "/search")) > (
       <("div", ("class", "form-row")) > (
         <("div", ("class", "form-group m-0 col-md-4")) > (
           <("input",
             ("type", "text"),
-            ("name", "search"),
+            ("name", "query"),
             ("class", "form-control"),
             ("placeholder", "Search"),
-            ("value", search)) />,
+            ("value", searchRequest.query)) />,
         ),
         <("div", ("class", "form-group m-0 col-md-2")) > (
           <("input", ("type", "submit"), ("class", "btn btn-primary btn-block"), ("value", "Search domains")) />,
