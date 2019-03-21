@@ -48,3 +48,16 @@ flywayPassword := conf.getString("default.jdbc.pass")
 flywayUrl in Test := conf.getString("test.jdbc.url")
 flywayUser in Test := conf.getString("test.jdbc.user")
 flywayPassword in Test := conf.getString("test.jdbc.pass")
+
+initialCommands in console :=
+  """
+    |import com.Main
+    |import com.repositories._
+    |import com.entities.Config
+    |import pureconfig.error.ConfigReaderFailures
+    |import pureconfig.generic.auto._
+    |import doobie.implicits._
+    |
+    |var config = pureconfig.loadConfig[Config]
+    |var db = Main.Database(config.right.get)
+    |""".stripMargin
