@@ -7,11 +7,13 @@ import akka.http.scaladsl.server.StandardRoute
 import cats.effect.IO
 import com.actors.DomainActor
 import com.entities.{SearchRequest, SearchResponse}
+import com.repositories.DomainRepository
 import com.templates.{LayoutTemplate, SearchTemplate}
 import com.usecases.WhoisUsecase
 import com.utils.Iterable.Doall
 import doobie.util.transactor.Transactor
 import org.slf4j.Logger
+import doobie.implicits._
 
 object SearchHandler {
   def apply(searchRequest: SearchRequest, path: Uri.Path, servers: com.usecases.WhoisUsecase.ServerMap)(
@@ -32,9 +34,10 @@ object SearchHandler {
           .map(tld => (tld, WhoisUsecase.get(domain.sld, tld, servers(tld))))
           .filter { case (_, raw) => raw.isDefined }
           .map { case (tld, raw) => (tld, WhoisUsecase.status(raw.get), raw.get) }
-          .map { case (tld, status, raw) => SearchResponse(domain.copy(tld = Some(tld)), status, raw) }
+          .map { case (tld, status, raw) => SearchResponse(domain.sld, Some(tld), status, raw) }
           .toList
           .doall(response => domainActor ! DomainActor.CreateMessage(response, db, logger))
+          .++(DomainRepository.soundex(domain.sld).transact(db).unsafeRunSync)
       case None => Seq[SearchResponse]()
     }
 

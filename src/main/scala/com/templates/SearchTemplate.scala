@@ -37,7 +37,7 @@ object SearchTemplate {
     <("div", ("class", "col-md-3 mb-3")) > (
       <("div", ("class", "p-3 text-success border rounded")) > (
         <("span", ("class", "mr-3")) > icon("check"),
-        searchResponse.domain.toString,
+        searchResponse.toString,
       )
     )
   }
@@ -46,7 +46,7 @@ object SearchTemplate {
     <("div", ("class", "col-md-3 mb-3")) > (
       <("div", ("class", "p-3 text-muted border rounded")) > (
         <("span", ("class", "mr-3")) > icon("minus"),
-        searchResponse.domain.toString,
+        searchResponse.toString,
       )
     )
   }

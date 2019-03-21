@@ -10,16 +10,16 @@ import org.slf4j.Logger
 
 class DomainActor extends Actor {
   def receive: PartialFunction[Any, Unit] = {
-    case DomainActor.CreateMessage(response, db, logger) if response.domain.tld.isDefined =>
-      val sldId: Int = SLDRepository.findOrCreate(response.domain.sld).transact(db).unsafeRunSync
-      val tldId: Int = TLDRepository.findOrCreate(response.domain.tld.get).transact(db).unsafeRunSync
+    case DomainActor.CreateMessage(response, db, logger) if response.tld.isDefined =>
+      val sldId: Int = SLDRepository.findOrCreate(response.sld).transact(db).unsafeRunSync
+      val tldId: Int = TLDRepository.findOrCreate(response.tld.get).transact(db).unsafeRunSync
 
       DomainRepository
         .create(sldId, tldId, response.status.value, response.raw)
         .transact(db)
         .attempt
         .unsafeRunSync match {
-        case Right(id) => logger.info(s"id=$id domain=${response.domain.toString}")
+        case Right(id) => logger.info(s"id=$id domain=${response.toString}")
         case Left(e)   => logger.error(e.toString)
       }
 
