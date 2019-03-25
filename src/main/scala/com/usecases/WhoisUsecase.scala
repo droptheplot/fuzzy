@@ -1,9 +1,11 @@
 package com.usecases
 
+import cats.data.NonEmptyList
 import com.entities.Domain
 import org.apache.commons.net.whois.{WhoisClient => Client}
 import spray.json._
 import spray.json.DefaultJsonProtocol._
+import org.slf4j.Logger
 
 import scala.io.Source
 import scala.util.Try
@@ -21,9 +23,9 @@ object WhoisUsecase {
     override def query(handle: String): String = c.query(handle)
   }
 
+  type SLD = String
   type TLD = String
   type Raw = String
-  type Host = String
   type ServerMap = Map[TLD, Server]
 
   sealed case class Status(value: String)
@@ -37,7 +39,7 @@ object WhoisUsecase {
   val serverResource: String = "whois.json"
 
   /** Common domains we're always checking. */
-  val commonTLDs: List[TLD] = List[TLD]("com", "net", "org", "co", "io", "app")
+  val commonTLDs: NonEmptyList[TLD] = NonEmptyList.of[TLD]("com", "net", "org", "co", "io", "app")
 
   /** Whois for taken domains would contain these lines. */
   val takenLines: List[String] = List[String](
@@ -50,13 +52,15 @@ object WhoisUsecase {
     "Domain not found"
   )
 
-  def get(host: Host, tld: TLD, server: Server)(
-      implicit client: ClientTrait = new ClientAdapter(new Client)): Option[Raw] = {
+  def get(sld: SLD, tld: TLD, server: Server)(implicit client: ClientTrait = new ClientAdapter(new Client),
+                                              logger: Logger): Option[Raw] = {
     val result = new StringBuilder("")
+
+    logger.info(s"WhoisUsecase.get sld=$sld tld=$tld")
 
     try {
       client.connect(server.hostname)
-      result.append(client.query(host + "." + tld))
+      result.append(client.query(sld + "." + tld))
     } catch {
       case _: Exception =>
         return None
@@ -115,8 +119,8 @@ object WhoisUsecase {
         }
     }
 
-  def commonTLDs(tld: Option[TLD]): List[TLD] = tld match {
-    case Some(_tld) => _tld :: commonTLDs.filterNot(_ == _tld)
+  def commonTLDs(tld: Option[TLD]): NonEmptyList[TLD] = tld match {
+    case Some(_tld) => NonEmptyList.of[TLD](_tld, commonTLDs.filterNot(_ == _tld): _*)
     case None       => commonTLDs
   }
 }

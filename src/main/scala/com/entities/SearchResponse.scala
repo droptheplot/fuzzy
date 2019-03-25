@@ -1,15 +1,11 @@
 package com.entities
 
-import com.usecases.WhoisUsecase.{Raw, Status}
+import com.usecases.WhoisUsecase.Status
 
-final case class SearchResponse(sld: String, tld: Option[String], status: Status, raw: Raw) {
+final case class SearchResponse(sld: String, tld: String, status: Status, raw: String) {
 
-  /** Returns "sld.tld" if tld exists, "sld" otherwise. */
-  override def toString: String = tld match {
-    case Some(_tld) => sld + "." + _tld
-    case None       => sld
-  }
+  override def toString: String = sld + "." + tld
 
-  /** Returns sld with given tld */
-  def toString(tld: String): String = sld + "." + tld
+  override def hashCode(): Int = toString.hashCode
+  override def equals(obj: Any): Boolean = hashCode == obj.hashCode
 }

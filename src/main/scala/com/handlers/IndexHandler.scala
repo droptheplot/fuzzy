@@ -10,7 +10,7 @@ object IndexHandler {
   def apply(path: Uri.Path)(implicit logger: Logger): StandardRoute = {
     val template = LayoutTemplate(IndexTemplate()).toString
 
-    logger.info(path.toString)
+    logger.info("IndexHanndler.apple")
 
     complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, template))
   }

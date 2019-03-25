@@ -1,7 +1,9 @@
 package com.repositories
 
+import cats.data.NonEmptyList
 import com.entities.SearchResponse
 import doobie.free.connection.ConnectionIO
+import doobie._
 import doobie.implicits._
 
 object DomainRepository {
@@ -14,6 +16,15 @@ object DomainRepository {
       ON CONFLICT (tld_id, sld_id) DO UPDATE
       SET checked_at = NOW();
       """.update.run
+
+  def get(sld: String, tlds: NonEmptyList[String]): ConnectionIO[Set[SearchResponse]] =
+    (fr"""
+      SELECT s.value, t.value, domains.status, domains.raw
+      FROM domains
+      LEFT JOIN slds s ON domains.sld_id = s.id
+      LEFT JOIN tlds t ON domains.tld_id = t.id
+      WHERE s.value = $sld
+        AND """ ++ Fragments.in(fr"t.value", tlds)).query[SearchResponse].to[Set]
 
   def soundex(value: String): ConnectionIO[List[SearchResponse]] =
     sql"""

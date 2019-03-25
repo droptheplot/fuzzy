@@ -3,10 +3,12 @@ package com.usecases
 import com.entities.Domain
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FunSpec, Matchers}
+import org.slf4j.Logger
 
 class WhoisUsecaseTest extends FunSpec with MockFactory with Matchers {
   describe("get") {
     implicit val client: WhoisUsecase.ClientTrait = mock[WhoisUsecase.ClientTrait]
+    implicit val logger: Logger = mock[Logger]
     val server: WhoisUsecase.Server = WhoisUsecase.Server("whois.verisign-grs.com")
 
     describe("when query is successful") {

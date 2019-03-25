@@ -10,17 +10,17 @@ import org.slf4j.Logger
 
 class DomainActor extends Actor {
   def receive: PartialFunction[Any, Unit] = {
-    case DomainActor.CreateMessage(response, db, logger) if response.tld.isDefined =>
+    case DomainActor.CreateMessage(response, db, logger) =>
       val sldId: Int = SLDRepository.findOrCreate(response.sld).transact(db).unsafeRunSync
-      val tldId: Int = TLDRepository.findOrCreate(response.tld.get).transact(db).unsafeRunSync
+      val tldId: Int = TLDRepository.findOrCreate(response.tld).transact(db).unsafeRunSync
 
       DomainRepository
         .create(sldId, tldId, response.status.value, response.raw)
         .transact(db)
         .attempt
         .unsafeRunSync match {
-        case Right(id) => logger.info(s"id=$id domain=${response.toString}")
-        case Left(e)   => logger.error(e.toString)
+        case Right(id) => logger.info(s"DomainActor.receive id=$id sld=${response.sld}, tld=${response.tld}")
+        case Left(e)   => logger.error(s"DomainActor.receive error=${e.toString}")
       }
 
     case _ => throw new IllegalArgumentException("Invalid message.")

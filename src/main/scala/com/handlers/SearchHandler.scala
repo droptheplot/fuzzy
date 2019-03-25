@@ -4,12 +4,14 @@ import akka.actor.ActorRef
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, Uri}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.StandardRoute
+import cats.data.NonEmptyList
 import cats.effect.IO
 import com.actors.DomainActor
 import com.entities.{SearchRequest, SearchResponse}
 import com.repositories.DomainRepository
 import com.templates.{LayoutTemplate, SearchTemplate}
 import com.usecases.WhoisUsecase
+import com.usecases.WhoisUsecase.TLD
 import com.utils.Iterable.Doall
 import doobie.util.transactor.Transactor
 import org.slf4j.Logger
@@ -21,23 +23,29 @@ object SearchHandler {
       domainActor: ActorRef,
       db: Transactor.Aux[IO, Unit]): StandardRoute = {
 
-    logger.info(path.toString)
-
     val result: Seq[SearchResponse] = WhoisUsecase
       .parseDomain(searchRequest.query, servers) match {
       case Some(domain) =>
-        logger.info(s"domain=$domain")
+        logger.info(s"SearchHandler.apply sld=${domain.sld} tld=${domain.tld}")
 
-        WhoisUsecase
-          .commonTLDs(domain.tld)
-          .par
-          .map(tld => (tld, WhoisUsecase.get(domain.sld, tld, servers(tld))))
-          .filter { case (_, raw) => raw.isDefined }
-          .map { case (tld, raw) => (tld, WhoisUsecase.status(raw.get), raw.get) }
-          .map { case (tld, status, raw) => SearchResponse(domain.sld, Some(tld), status, raw) }
+        val commonTLDs: NonEmptyList[TLD] = WhoisUsecase.commonTLDs(domain.tld)
+        val cache: Set[SearchResponse] = DomainRepository.get(domain.sld, commonTLDs).transact(db).unsafeRunSync
+
+        commonTLDs.toList.par
+          .flatMap { tld =>
+            cache.find(_.tld == tld) match {
+              case None =>
+                WhoisUsecase.get(domain.sld, tld, servers(tld)) match {
+                  case Some(raw) => Some(SearchResponse(domain.sld, tld, WhoisUsecase.status(raw), raw))
+                  case None      => None
+                }
+              case searchResponse => searchResponse
+            }
+          }
           .toList
-          .doall(response => domainActor ! DomainActor.CreateMessage(response, db, logger))
+          .doall(domainActor ! DomainActor.CreateMessage(_, db, logger))
           .++(DomainRepository.soundex(domain.sld).transact(db).unsafeRunSync)
+          .toSeq
       case None => Seq[SearchResponse]()
     }
 
