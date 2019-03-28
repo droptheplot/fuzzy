@@ -9,7 +9,8 @@ import cats.effect.{ExitCode, IO, IOApp}
 import cats.syntax.all._
 import com.entities.{Config, SearchRequest}
 import com.handlers.{IndexHandler, SearchHandler}
-import com.usecases.WhoisUsecase
+import com.services.WhoisService
+import com.services.WhoisService.ServerMap
 import doobie.util.transactor.Transactor
 import org.slf4j.{Logger, LoggerFactory}
 import pureconfig.error.ConfigReaderFailures
@@ -21,7 +22,7 @@ import scala.util.{Success, Try}
 object Main extends IOApp {
   def run(args: List[String]): IO[ExitCode] = {
     val config: Either[ConfigReaderFailures, Config] = pureconfig.loadConfig[Config]
-    val servers: Try[WhoisUsecase.ServerMap] = WhoisUsecase.loadServers()
+    val servers: Try[ServerMap] = WhoisService.loadServers()
 
     implicit val system: ActorSystem = ActorSystem()
     implicit val logger: Logger = LoggerFactory.getLogger(Main.getClass)
@@ -37,10 +38,10 @@ object Main extends IOApp {
   }
 
   object WebServer {
-    def apply(config: Config, servers: WhoisUsecase.ServerMap)(implicit system: ActorSystem,
-                                                               logger: Logger,
-                                                               domainActor: ActorRef,
-                                                               db: Transactor.Aux[IO, Unit]): IO[ExitCode] = {
+    def apply(config: Config, servers: ServerMap)(implicit system: ActorSystem,
+                                                  logger: Logger,
+                                                  domainActor: ActorRef,
+                                                  db: Transactor.Aux[IO, Unit]): IO[ExitCode] = {
       implicit val materializer: ActorMaterializer = ActorMaterializer()
       implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 

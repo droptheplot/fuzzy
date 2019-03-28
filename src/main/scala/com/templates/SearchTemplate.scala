@@ -1,7 +1,7 @@
 package com.templates
 
 import com.entities.{SearchRequest, SearchResponse}
-import com.usecases.WhoisUsecase.Status.Available
+import com.entities.Status._
 import scala2html._
 import scala2html.Enrich._
 

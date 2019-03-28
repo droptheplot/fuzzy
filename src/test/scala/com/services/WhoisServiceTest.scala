@@ -1,15 +1,15 @@
-package com.usecases
+package com.services
 
-import com.entities.Domain
+import com.entities.{Domain, Status}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FunSpec, Matchers}
 import org.slf4j.Logger
 
-class WhoisUsecaseTest extends FunSpec with MockFactory with Matchers {
+class WhoisServiceTest extends FunSpec with MockFactory with Matchers {
   describe("get") {
-    implicit val client: WhoisUsecase.ClientTrait = mock[WhoisUsecase.ClientTrait]
+    implicit val client: WhoisService.ClientTrait = mock[WhoisService.ClientTrait]
     implicit val logger: Logger = mock[Logger]
-    val server: WhoisUsecase.Server = WhoisUsecase.Server("whois.verisign-grs.com")
+    val server: WhoisService.Server = WhoisService.Server("whois.verisign-grs.com")
 
     describe("when query is successful") {
       it("should return whois data") {
@@ -17,7 +17,7 @@ class WhoisUsecaseTest extends FunSpec with MockFactory with Matchers {
         (client.query _).expects("google.com").returning("Whois about google.com").atLeastOnce()
         (client.disconnect _).expects().atLeastOnce()
 
-        WhoisUsecase.get("google", "com", server) should be(Some("Whois about google.com"))
+        WhoisService.get("google", "com", server) should be(Some("Whois about google.com"))
       }
     }
 
@@ -26,7 +26,7 @@ class WhoisUsecaseTest extends FunSpec with MockFactory with Matchers {
         (client.connect _).expects("whois.verisign-grs.com").atLeastOnce()
         (client.query _).expects("google.com").throwing(new Exception).atLeastOnce()
 
-        WhoisUsecase.get("google", "com", server) should be(None)
+        WhoisService.get("google", "com", server) should be(None)
       }
     }
   }
@@ -39,7 +39,7 @@ class WhoisUsecaseTest extends FunSpec with MockFactory with Matchers {
             |Registry Domain ID
           """.stripMargin
 
-        WhoisUsecase.status(raw) should be(WhoisUsecase.Status.Taken)
+        WhoisService.status(raw) should be(Status.Taken)
       }
     }
 
@@ -55,15 +55,15 @@ class WhoisUsecaseTest extends FunSpec with MockFactory with Matchers {
         )
 
         for (raw <- testCases) {
-          WhoisUsecase.status(raw) should be(WhoisUsecase.Status.Available)
+          WhoisService.status(raw) should be(Status.Available)
         }
       }
     }
   }
 
   describe("parseDomain") {
-    val servers: WhoisUsecase.ServerMap = Map[WhoisUsecase.TLD, WhoisUsecase.Server](
-      "com" -> WhoisUsecase.Server("whois.verisign-grs.com")
+    val servers: WhoisService.ServerMap = Map[WhoisService.TLD, WhoisService.Server](
+      "com" -> WhoisService.Server("whois.verisign-grs.com")
     )
 
     it("should create Domain with name and tld") {
@@ -76,7 +76,7 @@ class WhoisUsecaseTest extends FunSpec with MockFactory with Matchers {
       )
 
       for ((str, result) <- testCases) {
-        WhoisUsecase.parseDomain(str, servers) should be(result)
+        WhoisService.parseDomain(str, servers) should be(result)
       }
     }
   }
@@ -84,20 +84,20 @@ class WhoisUsecaseTest extends FunSpec with MockFactory with Matchers {
   describe("commonServerList") {
     describe("when TLD is common") {
       it("should move it to first position") {
-        WhoisUsecase.commonTLDs(Some("org")) should be(List[WhoisUsecase.TLD]("org", "com", "net", "co", "io", "app"))
+        WhoisService.commonTLDs(Some("org")) should be(List[WhoisService.TLD]("org", "com", "net", "co", "io", "app"))
       }
     }
 
     describe("when TLD is not common") {
       it("should put it on first position") {
-        WhoisUsecase.commonTLDs(Some("ru")) should be(
-          List[WhoisUsecase.TLD]("ru", "com", "net", "org", "co", "io", "app"))
+        WhoisService.commonTLDs(Some("ru")) should be(
+          List[WhoisService.TLD]("ru", "com", "net", "org", "co", "io", "app"))
       }
     }
 
     describe("when TLD is not given") {
       it("should not modify order") {
-        WhoisUsecase.commonTLDs(None) should be(List[WhoisUsecase.TLD]("com", "net", "org", "co", "io", "app"))
+        WhoisService.commonTLDs(None) should be(List[WhoisService.TLD]("com", "net", "org", "co", "io", "app"))
       }
     }
   }

@@ -14,6 +14,8 @@ libraryDependencies += "com.typesafe.akka" %% "akka-http"   % "10.1.5"
 libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.5.12"
 libraryDependencies += "com.typesafe.akka" %% "akka-http-spray-json" % "10.1.5"
 
+libraryDependencies += "org.http4s"            %% "http4s-dsl"           % "0.18.22"
+
 libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0"
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3"
 
