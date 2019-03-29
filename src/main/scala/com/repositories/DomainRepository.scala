@@ -36,4 +36,15 @@ object DomainRepository {
         AND s.value != $value
         AND status = 'available';
       """.query[SearchResponse].to[List]
+
+  def random(): ConnectionIO[Option[SearchResponse]] =
+    sql"""
+      SELECT s.value, t.value, domains.status, domains.raw
+      FROM domains
+      TABLESAMPLE SYSTEM(10)
+      LEFT JOIN slds s on domains.sld_id = s.id
+      LEFT JOIN tlds t on domains.tld_id = t.id
+      WHERE status = 'available'
+      LIMIT 1;
+    """.query[SearchResponse].option
 }

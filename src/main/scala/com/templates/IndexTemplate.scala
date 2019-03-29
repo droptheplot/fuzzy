@@ -1,6 +1,7 @@
 package com.templates
 
 import scala2html._
+import scala2html.Enrich._
 
 import scala.language.postfixOps
 
@@ -15,7 +16,7 @@ object IndexTemplate {
           ),
           <("div", ("class", "form-group text-center")) > (
             <("input", ("type", "submit"), ("class", "btn btn-primary mx-1"), ("value", "Search domains")) />,
-            <("input", ("type", "submit"), ("class", "btn btn-outline-secondary mx-1"), ("value", "I'm feeling lucky")) />,
+            <("a", ("href", "/random"), ("class", "btn btn-outline-secondary mx-1")) > "I'm feeling lucky",
           ),
         ),
       ),

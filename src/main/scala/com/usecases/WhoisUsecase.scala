@@ -43,4 +43,7 @@ object WhoisUsecase {
           .toSeq
       case None => Seq[SearchResponse]()
     }
+
+  def random()(implicit logger: Logger, db: Transactor.Aux[IO, Unit]): Option[SearchResponse] =
+    DomainRepository.random().transact(db).unsafeRunSync
 }

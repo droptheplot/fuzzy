@@ -8,7 +8,7 @@ import akka.stream.ActorMaterializer
 import cats.effect.{ExitCode, IO, IOApp}
 import cats.syntax.all._
 import com.entities.{Config, SearchRequest}
-import com.handlers.{IndexHandler, SearchHandler}
+import com.handlers.{IndexHandler, RandomHandler, SearchHandler}
 import com.services.WhoisService
 import com.services.WhoisService.ServerMap
 import doobie.util.transactor.Transactor
@@ -53,6 +53,10 @@ object Main extends IOApp {
         } ~ path("search") {
           get {
             (parameters('query).as(SearchRequest) & extractMatchedPath)(SearchHandler(_, _, servers))
+          }
+        } ~ path("random") {
+          get {
+            extractMatchedPath(RandomHandler(_))
           }
         }
 
