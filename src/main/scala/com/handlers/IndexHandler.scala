@@ -8,7 +8,7 @@ import org.slf4j.Logger
 
 object IndexHandler {
   def apply(path: Uri.Path)(implicit logger: Logger): StandardRoute = {
-    val template = LayoutTemplate(IndexTemplate()).toString
+    val template = LayoutTemplate("Fuzzy domain search engine", IndexTemplate()).toString
 
     logger.info("IndexHanndler.apple")
 

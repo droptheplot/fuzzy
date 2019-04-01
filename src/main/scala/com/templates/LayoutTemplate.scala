@@ -4,10 +4,10 @@ import scala2html.Tag
 import scala2html.implicits._
 
 object LayoutTemplate {
-  def apply(content: Seq[Tag]): Tag = {
+  def apply(title: String, content: Seq[Tag]): Tag = {
     <("html") > (
       <("head") > (
-        <("title") > "Fuzzy",
+        <("title") > title,
         <("meta", ("charset", "utf-8")),
         <("meta", ("name", "viewport"), ("content", "width=device-width, initial-scale=1, shrink-to-fit=no")),
         <(

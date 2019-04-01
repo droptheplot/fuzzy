@@ -20,7 +20,7 @@ object SearchHandler {
 
     val result: Seq[SearchResponse] = WhoisUsecase.search(searchRequest, servers)
 
-    val template = LayoutTemplate(SearchTemplate(searchRequest, result)).toString
+    val template = LayoutTemplate(s"Search: ${searchRequest.query}", SearchTemplate(searchRequest, result)).toString
 
     complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, template))
   }
