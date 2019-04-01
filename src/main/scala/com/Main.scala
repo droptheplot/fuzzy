@@ -60,17 +60,17 @@ object Main extends IOApp {
           }
         }
 
-      IO.fromFuture(IO(Http().bindAndHandle(route, config.default.host, config.default.port))).as(ExitCode.Success)
+      IO.fromFuture(IO(Http().bindAndHandle(route, config.env.host, config.env.port))).as(ExitCode.Success)
     }
   }
 
   object Database {
     def apply(config: Config): Transactor.Aux[IO, Unit] = {
       Transactor.fromDriverManager[IO](
-        config.default.jdbc.driver,
-        config.default.jdbc.url,
-        config.default.jdbc.user,
-        config.default.jdbc.pass,
+        config.env.jdbc.driver,
+        config.env.jdbc.url,
+        config.env.jdbc.user,
+        config.env.jdbc.pass,
       )
     }
   }

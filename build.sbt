@@ -1,5 +1,7 @@
 import com.typesafe.config.ConfigFactory
 
+import scala.util.Properties
+
 lazy val conf = ConfigFactory.parseFile(new File("src/main/resources/application.conf"))
 
 name := "Fuzzy"
@@ -39,13 +41,15 @@ resolvers += "ivy2" at "file://"+Path.userHome.absolutePath+"/.ivy2/local"
 
 libraryDependencies += "com.github.droptheplot" % "scala2html" % "master-SNAPSHOT"
 
-enablePlugins(FlywayPlugin)
+enablePlugins(FlywayPlugin, JavaAppPackaging)
 
 flywayLocations += conf.getString("migrations")
 
-flywayUrl := conf.getString("default.jdbc.url")
-flywayUser := conf.getString("default.jdbc.user")
-flywayPassword := conf.getString("default.jdbc.pass")
+val env: String = Properties.envOrElse("FUZZY_ENV", "development")
+
+flywayUrl := conf.getString(s"$env.jdbc.url")
+flywayUser := conf.getString(s"$env.jdbc.user")
+flywayPassword := conf.getString(s"$env.jdbc.pass")
 
 flywayUrl in Test := conf.getString("test.jdbc.url")
 flywayUser in Test := conf.getString("test.jdbc.user")

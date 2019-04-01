@@ -1,6 +1,16 @@
 package com.entities
 
-final case class Config(migrations: String, default: Config.Default, test: Config.Test)
+import com.entities.Config._
+
+import scala.util.Properties
+
+final case class Config(migrations: String, development: Development, production: Production, test: Test) {
+  def env: Env = Properties.envOrElse("FUZZY_ENV", "development") match {
+    case "production"  => production
+    case "development" => development
+    case "test"        => test
+  }
+}
 
 object Config {
   trait Env {
@@ -11,6 +21,7 @@ object Config {
 
   case class JDBC(driver: String, url: String, user: String, pass: String)
 
-  case class Default(host: String, port: Int, jdbc: JDBC) extends Env
+  case class Development(host: String, port: Int, jdbc: JDBC) extends Env
+  case class Production(host: String, port: Int, jdbc: JDBC) extends Env
   case class Test(host: String, port: Int, jdbc: JDBC) extends Env
 }
