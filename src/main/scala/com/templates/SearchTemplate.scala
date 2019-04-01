@@ -2,9 +2,8 @@ package com.templates
 
 import com.entities.{SearchRequest, SearchResponse}
 import com.entities.Status._
-import scala2html._
-import scala2html.Enrich._
-
+import scala2html.Tag
+import scala2html.implicits._
 import scala.language.postfixOps
 
 object SearchTemplate {

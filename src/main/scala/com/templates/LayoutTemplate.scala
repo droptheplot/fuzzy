@@ -1,7 +1,7 @@
 package com.templates
 
-import scala2html._
-import scala2html.Enrich._
+import scala2html.Tag
+import scala2html.implicits._
 
 object LayoutTemplate {
   def apply(content: Seq[Tag]): Tag = {
