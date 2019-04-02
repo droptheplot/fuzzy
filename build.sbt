@@ -16,7 +16,7 @@ libraryDependencies += "com.typesafe.akka" %% "akka-http"   % "10.1.5"
 libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.5.12"
 libraryDependencies += "com.typesafe.akka" %% "akka-http-spray-json" % "10.1.5"
 
-libraryDependencies += "org.http4s"            %% "http4s-dsl"           % "0.18.22"
+libraryDependencies += "org.http4s" %% "http4s-dsl" % "0.18.22"
 
 libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0"
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3"
@@ -36,6 +36,8 @@ libraryDependencies += "com.github.pureconfig" %% "pureconfig" % "0.10.1"
 
 libraryDependencies += "com.chuusai" %% "shapeless" % "2.3.3"
 
+libraryDependencies += "org.flywaydb" % "flyway-core" % "5.2.4"
+
 resolvers += "jitpack" at "https://jitpack.io"
 resolvers += "ivy2" at "file://"+Path.userHome.absolutePath+"/.ivy2/local"
 
@@ -43,7 +45,7 @@ libraryDependencies += "com.github.droptheplot" % "scala2html" % "master-SNAPSHO
 
 enablePlugins(FlywayPlugin, JavaAppPackaging)
 
-flywayLocations += conf.getString("migrations")
+flywayLocations += conf.getString(s"$env.jdbc.migrations")
 
 val env: String = Properties.envOrElse("FUZZY_ENV", "development")
 
