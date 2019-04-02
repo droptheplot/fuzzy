@@ -10,7 +10,7 @@ object IndexHandler {
   def apply(path: Uri.Path)(implicit logger: Logger): StandardRoute = {
     val template = LayoutTemplate("Fuzzy domain search engine", IndexTemplate()).toString
 
-    logger.info("IndexHanndler.apple")
+    logger.info("IndexHanndler.apply")
 
     complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, template))
   }
