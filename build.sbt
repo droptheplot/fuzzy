@@ -63,9 +63,9 @@ flywayPassword in Test := conf.getString("test.jdbc.pass")
 
 initialCommands in console :=
   """
-    |import com.Main
-    |import com.repositories._
-    |import com.entities.Config
+    |import fuzzy.Main
+    |import fuzzy.repositories._
+    |import fuzzy.entities.Config
     |import pureconfig.error.ConfigReaderFailures
     |import pureconfig.generic.auto._
     |import doobie.implicits._
