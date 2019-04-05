@@ -1,5 +1,6 @@
 package com.services
 
+import cats.data.NonEmptyList
 import com.entities.{Domain, Status}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FunSpec, Matchers}
@@ -13,9 +14,10 @@ class WhoisServiceTest extends FunSpec with MockFactory with Matchers {
 
     describe("when query is successful") {
       it("should return whois data") {
-        (client.connect _).expects("whois.verisign-grs.com").atLeastOnce()
-        (client.query _).expects("google.com").returning("Whois about google.com").atLeastOnce()
-        (client.disconnect _).expects().atLeastOnce()
+        (client.connect _).expects("whois.verisign-grs.com").once()
+        (client.query _).expects("google.com").returning("Whois about google.com").once()
+        (client.disconnect _).expects().once()
+        (logger.info: String => Unit).expects("WhoisUsecase.get sld=google tld=com").once()
 
         WhoisService.get("google", "com", server) should be(Some("Whois about google.com"))
       }
@@ -23,8 +25,9 @@ class WhoisServiceTest extends FunSpec with MockFactory with Matchers {
 
     describe("when query throws") {
       it("should return None") {
-        (client.connect _).expects("whois.verisign-grs.com").atLeastOnce()
-        (client.query _).expects("google.com").throwing(new Exception).atLeastOnce()
+        (client.connect _).expects("whois.verisign-grs.com").once()
+        (client.query _).expects("google.com").throwing(new Exception).once()
+        (logger.info: String => Unit).expects("WhoisUsecase.get sld=google tld=com").once()
 
         WhoisService.get("google", "com", server) should be(None)
       }
@@ -84,20 +87,22 @@ class WhoisServiceTest extends FunSpec with MockFactory with Matchers {
   describe("commonServerList") {
     describe("when TLD is common") {
       it("should move it to first position") {
-        WhoisService.commonTLDs(Some("org")) should be(List[WhoisService.TLD]("org", "com", "net", "co", "io", "app"))
+        WhoisService.commonTLDs(Some("org")) should be(
+          NonEmptyList.of[WhoisService.TLD]("org", "com", "net", "co", "io", "app"))
       }
     }
 
     describe("when TLD is not common") {
       it("should put it on first position") {
         WhoisService.commonTLDs(Some("ru")) should be(
-          List[WhoisService.TLD]("ru", "com", "net", "org", "co", "io", "app"))
+          NonEmptyList.of[WhoisService.TLD]("ru", "com", "net", "org", "co", "io", "app"))
       }
     }
 
     describe("when TLD is not given") {
       it("should not modify order") {
-        WhoisService.commonTLDs(None) should be(List[WhoisService.TLD]("com", "net", "org", "co", "io", "app"))
+        WhoisService.commonTLDs(None) should be(
+          NonEmptyList.of[WhoisService.TLD]("com", "net", "org", "co", "io", "app"))
       }
     }
   }
