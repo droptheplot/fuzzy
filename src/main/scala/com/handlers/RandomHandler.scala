@@ -1,17 +1,19 @@
 package com.handlers
 
-import akka.http.scaladsl.model.{StatusCodes, Uri}
-import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.StandardRoute
 import cats.effect.IO
 import com.usecases.WhoisUsecase
 import doobie.util.transactor.Transactor
+import org.http4s.{Query, Response, Uri}
+import org.http4s.dsl.io._
+import org.http4s.headers.Location
 import org.slf4j.Logger
 
 object RandomHandler {
-  def apply(path: Uri.Path)(implicit logger: Logger, db: Transactor.Aux[IO, Unit]): StandardRoute =
+  def apply()(implicit logger: Logger, db: Transactor.Aux[IO, Unit]): IO[Response[IO]] =
     WhoisUsecase.random() match {
-      case Some(searchResponse) => redirect(s"/search?query=${searchResponse.sld}", StatusCodes.SeeOther)
-      case None                 => redirect("/", StatusCodes.SeeOther)
+      case Some(searchResponse) =>
+        SeeOther(Location(Uri(path = "/search", query = Query.fromPairs(("query", searchResponse.sld)))))
+      case None =>
+        SeeOther(Location(Uri.uri("/")))
     }
 }

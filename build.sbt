@@ -16,7 +16,11 @@ libraryDependencies += "com.typesafe.akka" %% "akka-http"   % "10.1.5"
 libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.5.12"
 libraryDependencies += "com.typesafe.akka" %% "akka-http-spray-json" % "10.1.5"
 
-libraryDependencies += "org.http4s" %% "http4s-dsl" % "0.18.22"
+libraryDependencies += "org.http4s" %% "http4s-blaze-server" % "0.19.0"
+libraryDependencies += "org.http4s" %% "http4s-dsl" % "0.19.0"
+
+libraryDependencies +="co.fs2" %% "fs2-core" % "1.0.4"
+libraryDependencies +="co.fs2" %% "fs2-io" % "1.0.4"
 
 libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0"
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3"

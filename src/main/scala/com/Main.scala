@@ -1,10 +1,6 @@
 package com
 
 import akka.actor.{ActorRef, ActorSystem, Props}
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.Route
-import akka.stream.ActorMaterializer
 import cats.effect.{ExitCode, IO, IOApp}
 import cats.syntax.all._
 import com.entities.{Config, SearchRequest}
@@ -13,12 +9,14 @@ import com.services.WhoisService
 import com.services.WhoisService.ServerMap
 import doobie.util.transactor.Transactor
 import org.flywaydb.core.Flyway
+import org.http4s._
+import org.http4s.dsl.io._
+import org.http4s.server.blaze.BlazeServerBuilder
 import org.slf4j.{Logger, LoggerFactory}
 import pureconfig.error.ConfigReaderFailures
 import pureconfig.generic.auto._
 
-import scala.concurrent.ExecutionContextExecutor
-import scala.util.{Failure, Success, Try}
+import scala.util.{Success, Try}
 
 object Main extends IOApp {
   def run(args: List[String]): IO[ExitCode] = {
@@ -33,10 +31,7 @@ object Main extends IOApp {
         implicit val db: Transactor.Aux[IO, Unit] = Database(_config)
         implicit val domainActor: ActorRef = system.actorOf(Props[com.actors.DomainActor])
 
-        Database.migrate(_config) match {
-          case Success(i) => logger.info(s"$i migrations executed")
-          case Failure(e) => logger.warn("Migration failed", e)
-        }
+        Database.migrate(_config)
 
         WebServer(_config, _servers)
       case (_, _) => IO(ExitCode.Error)
@@ -48,27 +43,21 @@ object Main extends IOApp {
                                                   logger: Logger,
                                                   domainActor: ActorRef,
                                                   db: Transactor.Aux[IO, Unit]): IO[ExitCode] = {
-      implicit val materializer: ActorMaterializer = ActorMaterializer()
-      implicit val executionContext: ExecutionContextExecutor = system.dispatcher
+      object QueryParamMatcher extends QueryParamDecoderMatcher[String]("query")
 
-      val route: Route =
-        path("") {
-          get {
-            extractMatchedPath(IndexHandler(_))
+      BlazeServerBuilder[IO]
+        .bindHttp(config.env.port, config.env.host)
+        .withHttpApp(HttpRoutes
+          .of[IO] {
+            case GET -> Root                                        => IndexHandler()
+            case GET -> Root / "search" :? QueryParamMatcher(query) => SearchHandler(SearchRequest(query), servers)
+            case GET -> Root / "random"                             => RandomHandler()
           }
-        } ~ path("search") {
-          get {
-            (parameters('query).as(SearchRequest) & extractMatchedPath)(SearchHandler(_, _, servers))
-          }
-        } ~ path("random") {
-          get {
-            extractMatchedPath(RandomHandler(_))
-          }
-        }
-
-      logger.info(s"Running server on ${config.env.host}:${config.env.port}")
-
-      IO.fromFuture(IO(Http().bindAndHandle(route, config.env.host, config.env.port))).as(ExitCode.Success)
+          .orNotFound)
+        .serve
+        .compile
+        .drain
+        .as(ExitCode.Success)
     }
   }
 
