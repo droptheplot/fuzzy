@@ -45,15 +45,16 @@ object Main extends IOApp {
                                                   db: Transactor.Aux[IO, Unit]): IO[ExitCode] = {
       object QueryParamMatcher extends QueryParamDecoderMatcher[String]("query")
 
+      val routes: HttpRoutes[IO] =
+        HttpRoutes.of[IO] {
+          case GET -> Root                                        => IndexHandler()
+          case GET -> Root / "search" :? QueryParamMatcher(query) => SearchHandler(SearchRequest(query), servers)
+          case GET -> Root / "random"                             => RandomHandler()
+        }
+
       BlazeServerBuilder[IO]
         .bindHttp(config.env.port, config.env.host)
-        .withHttpApp(HttpRoutes
-          .of[IO] {
-            case GET -> Root                                        => IndexHandler()
-            case GET -> Root / "search" :? QueryParamMatcher(query) => SearchHandler(SearchRequest(query), servers)
-            case GET -> Root / "random"                             => RandomHandler()
-          }
-          .orNotFound)
+        .withHttpApp(routes.orNotFound)
         .serve
         .compile
         .drain
