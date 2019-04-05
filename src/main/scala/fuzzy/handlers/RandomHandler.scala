@@ -10,7 +10,7 @@ import org.slf4j.Logger
 
 object RandomHandler {
   def apply()(implicit logger: Logger, db: Transactor.Aux[IO, Unit]): IO[Response[IO]] =
-    WhoisUsecase.random() match {
+    WhoisUsecase.random().flatMap {
       case Some(searchResponse) =>
         SeeOther(Location(Uri(path = "/search", query = Query.fromPairs(("query", searchResponse.sld)))))
       case None =>

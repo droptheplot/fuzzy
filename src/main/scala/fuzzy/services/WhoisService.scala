@@ -1,6 +1,7 @@
 package fuzzy.services
 
 import cats.data.NonEmptyList
+import cats.effect.IO
 import fuzzy.entities.{Domain, Status}
 import org.apache.commons.net.whois.{WhoisClient => Client}
 import org.slf4j.Logger
@@ -46,7 +47,7 @@ object WhoisService {
   )
 
   def get(sld: SLD, tld: TLD, server: Server)(implicit client: ClientTrait = new ClientAdapter(new Client),
-                                              logger: Logger): Option[String] = {
+                                              logger: Logger): IO[Option[String]] = {
     val result = new StringBuilder("")
 
     logger.info(s"WhoisUsecase.get sld=$sld tld=$tld")
@@ -56,12 +57,12 @@ object WhoisService {
       result.append(client.query(sld + "." + tld))
     } catch {
       case _: Exception =>
-        return None
+        return IO.pure(None)
     }
 
     client.disconnect()
 
-    Some(result.toString)
+    IO.pure(Some(result.toString))
   }
 
   def status(raw: String): Status = {

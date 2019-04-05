@@ -19,7 +19,9 @@ class WhoisServiceTest extends FunSpec with MockFactory with Matchers {
         (client.disconnect _).expects().once()
         (logger.info: String => Unit).expects("WhoisUsecase.get sld=google tld=com").once()
 
-        WhoisService.get("google", "com", server) should be(Some("Whois about google.com"))
+        for (result <- WhoisService.get("google", "com", server)) yield {
+          result should be(Some("Whois about google.com"))
+        }
       }
     }
 
@@ -29,7 +31,9 @@ class WhoisServiceTest extends FunSpec with MockFactory with Matchers {
         (client.query _).expects("google.com").throwing(new Exception).once()
         (logger.info: String => Unit).expects("WhoisUsecase.get sld=google tld=com").once()
 
-        WhoisService.get("google", "com", server) should be(None)
+        for (result <- WhoisService.get("google", "com", server)) yield {
+          result should be(None)
+        }
       }
     }
   }
