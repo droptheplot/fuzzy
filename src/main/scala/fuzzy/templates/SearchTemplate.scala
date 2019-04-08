@@ -32,8 +32,10 @@ object SearchTemplate {
       }: _*),
     ),
     <("div", ("class", "text-center py-5")) > (
-      <("a", ("class", "navbar-text text-muted"), ("href", "https://github.com/droptheplot/fuzzy")) >
+      <("a", ("class", "text-muted mx-3"), ("href", "https://github.com/droptheplot/fuzzy")) >
         icon("github", "fab"),
+      <("a", ("class", "text-muted mx-3"), ("href", s"/api/search?query=${searchRequest.query}")) >
+        icon("code"),
     )
   )
 

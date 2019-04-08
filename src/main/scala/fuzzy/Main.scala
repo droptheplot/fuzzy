@@ -52,9 +52,12 @@ object Main extends IOApp {
 
       val routes: HttpRoutes[IO] =
         HttpRoutes.of[IO] {
-          case GET -> Root                                        => IndexHandler()
-          case GET -> Root / "search" :? QueryParamMatcher(query) => SearchHandler(SearchRequest(query), servers)
-          case GET -> Root / "random"                             => RandomHandler()
+          case GET -> Root => IndexHandler()
+          case GET -> Root / "search" :? QueryParamMatcher(query) =>
+            SearchHandler.html(SearchRequest(query), servers)
+          case GET -> Root / "api" / "search" :? QueryParamMatcher(query) =>
+            SearchHandler.api(SearchRequest(query), servers)
+          case GET -> Root / "random" => RandomHandler()
           case req @ GET -> Root / "styles.css" =>
             StaticFile.fromResource("/styles.css", ec, Some(req)).getOrElseF(NotFound())
         }

@@ -36,6 +36,10 @@ libraryDependencies += "org.tpolecat" %% "doobie-core" % "0.6.0"
 libraryDependencies += "org.tpolecat" %% "doobie-postgres" % "0.6.0"
 libraryDependencies += "org.tpolecat" %% "doobie-specs2" % "0.6.0"
 
+libraryDependencies += "io.circe" %% "circe-core" % "0.10.0"
+libraryDependencies += "io.circe" %% "circe-generic" % "0.10.0"
+libraryDependencies += "io.circe" %% "circe-parser" % "0.10.0"
+
 libraryDependencies += "com.github.pureconfig" %% "pureconfig" % "0.10.1"
 
 libraryDependencies += "com.chuusai" %% "shapeless" % "2.3.3"
