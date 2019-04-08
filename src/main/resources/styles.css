@@ -1,0 +1,17 @@
+.logo {
+    font-family: 'Fjalla One', sans-serif;
+    font-size: 75px;
+    line-height: 1;
+}
+
+.logo div {
+    font-size: 18px;
+}
+
+.logo:hover {
+    text-decoration: none;
+}
+
+.navbar-brand {
+    font-family: 'Fjalla One', sans-serif;
+}

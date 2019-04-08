@@ -10,6 +10,7 @@ object LayoutTemplate {
         <("title") > title,
         <("meta", ("charset", "utf-8")),
         <("meta", ("name", "viewport"), ("content", "width=device-width, initial-scale=1, shrink-to-fit=no")),
+        <("link", ("href", "https://fonts.googleapis.com/css?family=Fjalla+One"), ("rel", "stylesheet")),
         <(
           "link",
           ("rel", "stylesheet"),
@@ -23,6 +24,11 @@ object LayoutTemplate {
           ("href", "https://use.fontawesome.com/releases/v5.6.3/css/all.css"),
           ("integrity", "sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/"),
           ("crossorigin", "anonymous")
+        ),
+        <(
+          "link",
+          ("rel", "stylesheet"),
+          ("href", "/styles.css"),
         ),
         <(
           "script",
@@ -43,14 +49,7 @@ object LayoutTemplate {
           ("crossorigin", "anonymous")
         ),
       ),
-      <("body") > (
-        <("div", ("class", "container")) > (
-          <("h1", ("class", "text-center py-5")) > (
-            <("a", ("href", "/")) > "Fuzzy"
-          ),
-          content.mkString
-        )
-      ),
+      <("body", ("class", "bg-light")) > content.mkString
     )
   }
 }
