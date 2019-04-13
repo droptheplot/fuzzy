@@ -49,7 +49,7 @@ libraryDependencies += "org.flywaydb" % "flyway-core" % "5.2.4"
 resolvers += "jitpack" at "https://jitpack.io"
 resolvers += "ivy2" at "file://"+Path.userHome.absolutePath+"/.ivy2/local"
 
-libraryDependencies += "com.github.droptheplot" % "scala2html" % "master-SNAPSHOT"
+libraryDependencies += "com.github.droptheplot" % "scala2html" % "1.0.0"
 
 enablePlugins(FlywayPlugin, JavaAppPackaging)
 
