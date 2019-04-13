@@ -1,7 +1,7 @@
 package fuzzy.services
 
 import cats.data.NonEmptyList
-import fuzzy.entities.{Domain, Status}
+import fuzzy.entities.{Domain, SearchResponse, Status}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FunSpec, Matchers}
 import org.slf4j.Logger
@@ -20,7 +20,7 @@ class WhoisServiceTest extends FunSpec with MockFactory with Matchers {
         (logger.info: String => Unit).expects("WhoisUsecase.get sld=google tld=com").once()
 
         for (result <- WhoisService.get("google", "com", server)) yield {
-          result should be(Some("Whois about google.com"))
+          result should be(Some(SearchResponse("google", "com", Status.Available, "Whois about google.com")))
         }
       }
     }
