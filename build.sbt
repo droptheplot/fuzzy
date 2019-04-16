@@ -35,6 +35,7 @@ libraryDependencies += "org.scalamock" % "scalamock_2.12" % "4.1.0"
 libraryDependencies += "org.tpolecat" %% "doobie-core" % "0.6.0"
 libraryDependencies += "org.tpolecat" %% "doobie-postgres" % "0.6.0"
 libraryDependencies += "org.tpolecat" %% "doobie-specs2" % "0.6.0"
+libraryDependencies += "org.tpolecat" %% "doobie-scalatest" % "0.6.0"
 
 libraryDependencies += "io.circe" %% "circe-core" % "0.10.0"
 libraryDependencies += "io.circe" %% "circe-generic" % "0.10.0"
