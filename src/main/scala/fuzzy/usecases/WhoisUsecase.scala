@@ -3,7 +3,6 @@ package fuzzy.usecases
 import akka.actor.ActorRef
 import cats.data.NonEmptyList
 import cats.effect.IO
-import cats.implicits._
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import fuzzy.actors.DomainActor
@@ -13,6 +12,10 @@ import fuzzy.services.WhoisService
 import fuzzy.services.WhoisService.{ServerMap, TLD}
 import fuzzy.utils.Traversable._
 import org.slf4j.Logger
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.util.{Failure, Success, Try}
 
 object WhoisUsecase {
   def search(searchRequest: SearchRequest, servers: ServerMap)(
@@ -28,25 +31,32 @@ object WhoisUsecase {
 
         for {
           cache <- DomainRepository.get(sld, commonTLDs).transact(db)
-          searchResponses <- commonTLDs.toList.map(fetch(sld, _, cache, servers)).sequence
+          searchResponses <- fetch(commonTLDs, sld, cache, servers)
           similarSearchResponses <- DomainRepository.soundex(sld).transact(db)
         } yield {
-          searchResponses.flatten
+          searchResponses
+            .flatMap(_.toOption)
             .doall(domainActor ! DomainActor.CreateMessage(_, db, logger))
             .++(similarSearchResponses)
         }
-
       case None => IO.pure(Seq[SearchResponse]())
     }
 
   def random()(implicit db: Transactor.Aux[IO, Unit]): IO[Option[SearchResponse]] =
     DomainRepository.random().transact(db)
 
-  private def fetch(sld: String, tld: String, cache: Set[SearchResponse], servers: ServerMap)(
-      implicit logger: Logger
-  ): IO[Option[SearchResponse]] =
-    cache.find(_.tld == tld) match {
-      case None           => WhoisService.get(sld, tld, servers(tld))
-      case searchResponse => IO.pure(searchResponse)
-    }
+  private def fetch(commonTLDs: NonEmptyList[TLD], sld: String, cache: Set[SearchResponse], servers: ServerMap)(
+      implicit logger: Logger): IO[Seq[Try[SearchResponse]]] = IO.async { cb =>
+    Future
+      .traverse(commonTLDs.toList) { tld =>
+        cache.find(_.tld == tld) match {
+          case None                 => Future { WhoisService.get(sld, tld, servers(tld)) }
+          case Some(searchResponse) => Future.successful(Success(searchResponse))
+        }
+      }
+      .onComplete {
+        case Success(value) => cb(Right(value))
+        case Failure(error) => cb(Left(error))
+      }
+  }
 }

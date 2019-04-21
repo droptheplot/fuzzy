@@ -6,6 +6,8 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FunSpec, Matchers}
 import org.slf4j.Logger
 
+import scala.util.Success
+
 class WhoisServiceTest extends FunSpec with MockFactory with Matchers {
   describe("get") {
     implicit val client: WhoisService.ClientTrait = mock[WhoisService.ClientTrait]
@@ -19,21 +21,18 @@ class WhoisServiceTest extends FunSpec with MockFactory with Matchers {
         (client.disconnect _).expects().once()
         (logger.info: String => Unit).expects("WhoisUsecase.get sld=google tld=com").once()
 
-        for (result <- WhoisService.get("google", "com", server)) yield {
-          result should be(Some(SearchResponse("google", "com", Status.Available, "Whois about google.com")))
-        }
+        WhoisService.get("google", "com", server) should be(
+          Success(SearchResponse("google", "com", Status.Available, "Whois about google.com")))
       }
     }
 
     describe("when query throws") {
-      it("should return None") {
+      it("should return Failure") {
         (client.connect _).expects("whois.verisign-grs.com").once()
         (client.query _).expects("google.com").throwing(new Exception).once()
         (logger.info: String => Unit).expects("WhoisUsecase.get sld=google tld=com").once()
 
-        for (result <- WhoisService.get("google", "com", server)) yield {
-          result should be(None)
-        }
+        WhoisService.get("google", "com", server).isFailure should be(true)
       }
     }
   }
