@@ -6,10 +6,9 @@ import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import fuzzy.actors.DomainActor
-import fuzzy.entities.{Domain, SearchRequest, SearchResponse}
+import fuzzy.entities._
 import fuzzy.repositories.DomainRepository
 import fuzzy.services.WhoisService
-import fuzzy.services.WhoisService.{ServerMap, TLD}
 import fuzzy.utils.Traversable._
 import org.slf4j.Logger
 

@@ -1,7 +1,7 @@
 package fuzzy.services
 
 import cats.data.NonEmptyList
-import fuzzy.entities.{Domain, SearchResponse, Status}
+import fuzzy.entities._
 import org.apache.commons.net.whois.{WhoisClient => Client}
 import org.slf4j.Logger
 import spray.json._
@@ -22,12 +22,6 @@ object WhoisService {
     override def disconnect(): Unit = c.disconnect()
     override def query(handle: String): String = c.query(handle)
   }
-
-  type SLD = String
-  type TLD = String
-  type ServerMap = Map[TLD, Server]
-
-  final case class Server(hostname: String)
 
   val serverResource: String = "whois.json"
 

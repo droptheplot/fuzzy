@@ -3,8 +3,7 @@ package fuzzy.handlers
 import akka.actor.ActorRef
 import cats.effect.IO
 import doobie.util.transactor.Transactor
-import fuzzy.entities.{SearchRequest, Status}
-import fuzzy.services.WhoisService.ServerMap
+import fuzzy.entities._
 import fuzzy.templates.{LayoutTemplate, SearchTemplate}
 import fuzzy.usecases.WhoisUsecase
 import io.circe.{Encoder, Json}

@@ -1,7 +1,7 @@
 package fuzzy.services
 
 import cats.data.NonEmptyList
-import fuzzy.entities.{Domain, SearchResponse, Status}
+import fuzzy.entities._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FunSpec, Matchers}
 import org.slf4j.Logger
@@ -12,7 +12,7 @@ class WhoisServiceTest extends FunSpec with MockFactory with Matchers {
   describe("get") {
     implicit val client: WhoisService.ClientTrait = mock[WhoisService.ClientTrait]
     implicit val logger: Logger = mock[Logger]
-    val server: WhoisService.Server = WhoisService.Server("whois.verisign-grs.com")
+    val server: Server = Server("whois.verisign-grs.com")
 
     describe("when query is successful") {
       it("should return whois data") {
@@ -68,9 +68,7 @@ class WhoisServiceTest extends FunSpec with MockFactory with Matchers {
   }
 
   describe("parseDomain") {
-    val servers: WhoisService.ServerMap = Map[WhoisService.TLD, WhoisService.Server](
-      "com" -> WhoisService.Server("whois.verisign-grs.com")
-    )
+    val servers: ServerMap = Map[TLD, Server]("com" -> Server("whois.verisign-grs.com"))
 
     it("should create Domain with name and tld") {
       val testCases = List[(String, Option[Domain])](
@@ -90,22 +88,20 @@ class WhoisServiceTest extends FunSpec with MockFactory with Matchers {
   describe("commonServerList") {
     describe("when TLD is common") {
       it("should move it to first position") {
-        WhoisService.commonTLDs(Some("org")) should be(
-          NonEmptyList.of[WhoisService.TLD]("org", "com", "net", "co", "io", "app"))
+        WhoisService.commonTLDs(Some("org")) should be(NonEmptyList.of[TLD]("org", "com", "net", "co", "io", "app"))
       }
     }
 
     describe("when TLD is not common") {
       it("should put it on first position") {
         WhoisService.commonTLDs(Some("ru")) should be(
-          NonEmptyList.of[WhoisService.TLD]("ru", "com", "net", "org", "co", "io", "app"))
+          NonEmptyList.of[TLD]("ru", "com", "net", "org", "co", "io", "app"))
       }
     }
 
     describe("when TLD is not given") {
       it("should not modify order") {
-        WhoisService.commonTLDs(None) should be(
-          NonEmptyList.of[WhoisService.TLD]("com", "net", "org", "co", "io", "app"))
+        WhoisService.commonTLDs(None) should be(NonEmptyList.of[TLD]("com", "net", "org", "co", "io", "app"))
       }
     }
   }
