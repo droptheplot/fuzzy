@@ -14,20 +14,19 @@ import scala.util.{Success, Try}
 
 object Main extends IOApp {
   def run(args: List[String]): IO[ExitCode] = {
-    val config: Either[ConfigReaderFailures, Config] = pureconfig.loadConfig[Config]
-    val servers: Try[ServerMap] = WhoisService.loadServers()
+    val maybeConfig: Either[ConfigReaderFailures, Config] = pureconfig.loadConfig[Config]
+    val maybeServerMap: Try[ServerMap] = WhoisService.loadServers()
 
-    implicit val system: ActorSystem = ActorSystem()
-    implicit val logger: Logger = LoggerFactory.getLogger(Main.getClass)
+    (maybeConfig, maybeServerMap) match {
+      case (Right(config), Success(serverMap)) =>
+        val system: ActorSystem = ActorSystem()
+        val logger: Logger = LoggerFactory.getLogger(Main.getClass)
+        val db: Transactor.Aux[IO, Unit] = Database(config)
+        val domainActor: ActorRef = system.actorOf(Props[DomainActor])
 
-    (config, servers) match {
-      case (Right(_config), Success(_servers)) =>
-        implicit val db: Transactor.Aux[IO, Unit] = Database(_config)
-        implicit val domainActor: ActorRef = system.actorOf(Props[DomainActor])
+        Database.migrate(config)
 
-        Database.migrate(_config)
-
-        WebServer(_config, _servers)
+        WebServer(config)(serverMap, system, logger, domainActor, db)
       case (_, _) => IO(ExitCode.Error)
     }
   }

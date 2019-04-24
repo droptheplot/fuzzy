@@ -7,6 +7,9 @@ import cats.effect.{ContextShift, ExitCode, IO}
 import doobie.util.transactor.Transactor
 import fuzzy.entities._
 import fuzzy.handlers._
+import fuzzy.repositories.{DomainRepository, DomainRepositoryTrait}
+import fuzzy.services.{WhoisService, WhoisServiceTrait}
+import fuzzy.usecases.{WhoisUsecase, WhoisUsecaseTrait}
 import org.http4s.{HttpRoutes, StaticFile}
 import org.http4s.dsl.io._
 import org.http4s.server.blaze.BlazeServerBuilder
@@ -16,24 +19,35 @@ import pureconfig.generic.auto._
 import scala.concurrent.ExecutionContext
 
 object WebServer {
-  object QueryParamMatcher extends QueryParamDecoderMatcher[String]("query")
+  def apply(config: Config)(implicit serverMap: ServerMap,
+                            system: ActorSystem,
+                            logger: Logger,
+                            domainActor: ActorRef,
+                            db: Transactor.Aux[IO, Unit]): IO[ExitCode] = {
+    object QueryParamMatcher extends QueryParamDecoderMatcher[String]("query")
 
-  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+    implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
 
-  def apply(config: Config, servers: ServerMap)(implicit system: ActorSystem,
-                                                logger: Logger,
-                                                domainActor: ActorRef,
-                                                db: Transactor.Aux[IO, Unit]): IO[ExitCode] = {
     val ec = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(4))
+
+    implicit val whoisService: WhoisServiceTrait = new WhoisService()
+
+    implicit val domainRepository: DomainRepositoryTrait = new DomainRepository()
+
+    implicit val whoisUsecase: WhoisUsecaseTrait = new WhoisUsecase()
+
+    implicit val searchHandler: SearchHandler = new SearchHandler()
+    implicit val randomHandler: RandomHandler = new RandomHandler()
+    implicit val indexHandler: IndexHandler = new IndexHandler()
 
     val routes: HttpRoutes[IO] =
       HttpRoutes.of[IO] {
-        case GET -> Root => IndexHandler()
+        case GET -> Root => indexHandler()
         case GET -> Root / "search" :? QueryParamMatcher(query) =>
-          SearchHandler.html(SearchRequest(query), servers)
+          searchHandler.html(SearchRequest(query))
         case GET -> Root / "api" / "search" :? QueryParamMatcher(query) =>
-          SearchHandler.api(SearchRequest(query), servers)
-        case GET -> Root / "random" => RandomHandler()
+          searchHandler.api(SearchRequest(query))
+        case GET -> Root / "random" => randomHandler()
         case req @ GET -> Root / "styles.css" =>
           StaticFile.fromResource("/styles.css", ec, Some(req)).getOrElseF(NotFound())
       }

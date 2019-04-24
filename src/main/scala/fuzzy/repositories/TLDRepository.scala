@@ -4,7 +4,7 @@ import cats.data.OptionT
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 
-object TLDRepository extends LDRepository {
+object TLDRepository extends LDRepositoryTrait {
   def find(value: String): ConnectionIO[Option[Int]] =
     sql"""SELECT id FROM tlds WHERE value = $value LIMIT 1;""".query[Int].option
 

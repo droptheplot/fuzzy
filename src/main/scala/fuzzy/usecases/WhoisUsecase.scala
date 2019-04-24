@@ -7,8 +7,8 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import fuzzy.actors.DomainActor
 import fuzzy.entities._
-import fuzzy.repositories.DomainRepository
-import fuzzy.services.WhoisService
+import fuzzy.repositories.DomainRepositoryTrait
+import fuzzy.services.WhoisServiceTrait
 import fuzzy.utils.Traversable._
 import org.slf4j.Logger
 
@@ -16,22 +16,25 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
-object WhoisUsecase {
-  def search(searchRequest: SearchRequest, servers: ServerMap)(
+class WhoisUsecase()(implicit whoisService: WhoisServiceTrait,
+                     domainRepository: DomainRepositoryTrait,
+                     serverMap: ServerMap)
+    extends WhoisUsecaseTrait {
+  def search(searchRequest: SearchRequest)(
       implicit logger: Logger,
       domainActor: ActorRef,
       db: Transactor.Aux[IO, Unit],
   ): IO[Seq[SearchResponse]] =
-    WhoisService.parseDomain(searchRequest.query, servers) match {
+    whoisService.parseDomain(searchRequest.query, serverMap) match {
       case Some(Domain(sld, tld)) =>
         logger.info(s"SearchHandler.apply sld=$sld tld=$tld")
 
-        lazy val commonTLDs: NonEmptyList[TLD] = WhoisService.commonTLDs(tld)
+        lazy val commonTLDs: NonEmptyList[TLD] = whoisService.commonTLDs(tld)
 
         for {
-          cache <- DomainRepository.get(sld, commonTLDs).transact(db)
-          searchResponses <- fetch(commonTLDs, sld, cache, servers)
-          similarSearchResponses <- DomainRepository.soundex(sld).transact(db)
+          cache <- domainRepository.get(sld, commonTLDs).transact(db)
+          searchResponses <- fetch(commonTLDs, sld, cache)
+          similarSearchResponses <- domainRepository.soundex(sld).transact(db)
         } yield {
           searchResponses
             .flatMap(_.toOption)
@@ -42,14 +45,14 @@ object WhoisUsecase {
     }
 
   def random()(implicit db: Transactor.Aux[IO, Unit]): IO[Option[SearchResponse]] =
-    DomainRepository.random().transact(db)
+    domainRepository.random().transact(db)
 
-  private def fetch(commonTLDs: NonEmptyList[TLD], sld: String, cache: Set[SearchResponse], servers: ServerMap)(
+  private def fetch(commonTLDs: NonEmptyList[TLD], sld: String, cache: Set[SearchResponse])(
       implicit logger: Logger): IO[Seq[Try[SearchResponse]]] = IO.async { cb =>
     Future
       .traverse(commonTLDs.toList) { tld =>
         cache.find(_.tld == tld) match {
-          case None                 => Future { WhoisService.get(sld, tld, servers(tld)) }
+          case None                 => Future { whoisService.get(sld, tld, serverMap(tld)) }
           case Some(searchResponse) => Future.successful(Success(searchResponse))
         }
       }

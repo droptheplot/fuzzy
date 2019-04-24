@@ -14,7 +14,7 @@ class DomainActor extends Actor {
       val sldId: Int = SLDRepository.findOrCreate(response.sld).transact(db).unsafeRunSync
       val tldId: Int = TLDRepository.findOrCreate(response.tld).transact(db).unsafeRunSync
 
-      DomainRepository
+      new DomainRepository()
         .create(sldId, tldId, response.status.value, response.raw)
         .transact(db)
         .attempt

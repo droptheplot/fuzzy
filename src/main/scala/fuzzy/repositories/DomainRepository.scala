@@ -6,7 +6,7 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import fuzzy.entities.SearchResponse
 
-object DomainRepository {
+class DomainRepository extends DomainRepositoryTrait {
 
   /** Returns id */
   def create(sldId: Int, tldId: Int, status: String, raw: String): ConnectionIO[Int] =

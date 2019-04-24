@@ -6,8 +6,10 @@ import org.scalatest.{FunSuite, Matchers}
 import pureconfig.generic.auto._
 
 class DomainRepositoryTest extends FunSuite with Matchers with IOChecker with RepositoryTest {
-  test("create") { DomainRepository.create(1, 1, "Available", "Raw") }
-  test("get") { DomainRepository.get("google", NonEmptyList.one("com")) }
-  test("soundex") { DomainRepository.soundex("google") }
-  test("random") { DomainRepository.random() }
+  val domainRepository: DomainRepositoryTrait = new DomainRepository()
+
+  test("create") { domainRepository.create(1, 1, "Available", "Raw") }
+  test("get") { domainRepository.get("google", NonEmptyList.one("com")) }
+  test("soundex") { domainRepository.soundex("google") }
+  test("random") { domainRepository.random() }
 }

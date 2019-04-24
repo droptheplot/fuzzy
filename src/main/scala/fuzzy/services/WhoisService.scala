@@ -10,20 +10,7 @@ import spray.json.DefaultJsonProtocol._
 import scala.io.Source
 import scala.util.Try
 
-object WhoisService {
-  trait ClientTrait {
-    def connect(hostname: String): Unit
-    def disconnect(): Unit
-    def query(handle: String): String
-  }
-
-  class ClientAdapter(c: Client) extends ClientTrait {
-    override def connect(hostname: String): Unit = c.connect(hostname)
-    override def disconnect(): Unit = c.disconnect()
-    override def query(handle: String): String = c.query(handle)
-  }
-
-  val serverResource: String = "whois.json"
+class WhoisService extends WhoisServiceTrait {
 
   /** Common domains we're always checking. */
   val commonTLDs: NonEmptyList[TLD] = NonEmptyList.of[TLD]("com", "net", "org", "co", "io", "app")
@@ -38,6 +25,11 @@ object WhoisService {
     "No entries found",
     "Domain not found"
   )
+
+  def commonTLDs(tld: Option[TLD]): NonEmptyList[TLD] = tld match {
+    case Some(_tld) => NonEmptyList.of[TLD](_tld, commonTLDs.filterNot(_ == _tld): _*)
+    case None       => commonTLDs
+  }
 
   def get(sld: SLD, tld: TLD, server: Server)(implicit client: ClientTrait = new ClientAdapter(new Client),
                                               logger: Logger): Try[SearchResponse] = Try {
@@ -64,6 +56,29 @@ object WhoisService {
     }
   }
 
+  def parseDomain(str: String, serverMap: ServerMap): Option[Domain] =
+    serverMap
+      .find { case (tld, _) => str.endsWith("." + tld) } match {
+      case Some((tld, _)) =>
+        str
+          .stripSuffix("." + tld)
+          .split('.')
+          .takeRight(1) match {
+          case Array(name) if !name.isEmpty => Some(Domain(name, Some(tld)))
+          case _                            => None
+        }
+      case None =>
+        str.split('.').lastOption match {
+          case Some(name) if !name.isEmpty => Some(Domain(name, None))
+          case _                           => None
+        }
+    }
+}
+
+object WhoisService {
+
+  val serverResource: String = "whois.json"
+
   def loadServers(): Try[ServerMap] = {
     implicit object serverFormat extends JsonFormat[Server] {
       override def write(obj: Server): JsValue = JsObject()
@@ -85,26 +100,4 @@ object WhoisService {
     }
   }
 
-  def parseDomain(str: String, servers: ServerMap): Option[Domain] =
-    servers
-      .find { case (tld, _) => str.endsWith("." + tld) } match {
-      case Some((tld, _)) =>
-        str
-          .stripSuffix("." + tld)
-          .split('.')
-          .takeRight(1) match {
-          case Array(name) if !name.isEmpty => Some(Domain(name, Some(tld)))
-          case _                            => None
-        }
-      case None =>
-        str.split('.').lastOption match {
-          case Some(name) if !name.isEmpty => Some(Domain(name, None))
-          case _                           => None
-        }
-    }
-
-  def commonTLDs(tld: Option[TLD]): NonEmptyList[TLD] = tld match {
-    case Some(_tld) => NonEmptyList.of[TLD](_tld, commonTLDs.filterNot(_ == _tld): _*)
-    case None       => commonTLDs
-  }
 }

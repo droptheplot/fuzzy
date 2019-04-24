@@ -9,8 +9,10 @@ import org.slf4j.Logger
 import scala.util.Success
 
 class WhoisServiceTest extends FunSpec with MockFactory with Matchers {
+  val whoisService: WhoisServiceTrait = new WhoisService()
+
   describe("get") {
-    implicit val client: WhoisService.ClientTrait = mock[WhoisService.ClientTrait]
+    implicit val client: ClientTrait = mock[ClientTrait]
     implicit val logger: Logger = mock[Logger]
     val server: Server = Server("whois.verisign-grs.com")
 
@@ -21,7 +23,7 @@ class WhoisServiceTest extends FunSpec with MockFactory with Matchers {
         (client.disconnect _).expects().once()
         (logger.info: String => Unit).expects("WhoisUsecase.get sld=google tld=com").once()
 
-        WhoisService.get("google", "com", server) should be(
+        whoisService.get("google", "com", server) should be(
           Success(SearchResponse("google", "com", Status.Available, "Whois about google.com")))
       }
     }
@@ -32,7 +34,7 @@ class WhoisServiceTest extends FunSpec with MockFactory with Matchers {
         (client.query _).expects("google.com").throwing(new Exception).once()
         (logger.info: String => Unit).expects("WhoisUsecase.get sld=google tld=com").once()
 
-        WhoisService.get("google", "com", server).isFailure should be(true)
+        whoisService.get("google", "com", server).isFailure should be(true)
       }
     }
   }
@@ -45,7 +47,7 @@ class WhoisServiceTest extends FunSpec with MockFactory with Matchers {
             |Registry Domain ID
           """.stripMargin
 
-        WhoisService.status(raw) should be(Status.Taken)
+        whoisService.status(raw) should be(Status.Taken)
       }
     }
 
@@ -61,14 +63,14 @@ class WhoisServiceTest extends FunSpec with MockFactory with Matchers {
         )
 
         for (raw <- testCases) {
-          WhoisService.status(raw) should be(Status.Available)
+          whoisService.status(raw) should be(Status.Available)
         }
       }
     }
   }
 
   describe("parseDomain") {
-    val servers: ServerMap = Map[TLD, Server]("com" -> Server("whois.verisign-grs.com"))
+    val serverMap: ServerMap = Map[TLD, Server]("com" -> Server("whois.verisign-grs.com"))
 
     it("should create Domain with name and tld") {
       val testCases = List[(String, Option[Domain])](
@@ -80,7 +82,7 @@ class WhoisServiceTest extends FunSpec with MockFactory with Matchers {
       )
 
       for ((str, result) <- testCases) {
-        WhoisService.parseDomain(str, servers) should be(result)
+        whoisService.parseDomain(str, serverMap) should be(result)
       }
     }
   }
@@ -88,20 +90,20 @@ class WhoisServiceTest extends FunSpec with MockFactory with Matchers {
   describe("commonServerList") {
     describe("when TLD is common") {
       it("should move it to first position") {
-        WhoisService.commonTLDs(Some("org")) should be(NonEmptyList.of[TLD]("org", "com", "net", "co", "io", "app"))
+        whoisService.commonTLDs(Some("org")) should be(NonEmptyList.of[TLD]("org", "com", "net", "co", "io", "app"))
       }
     }
 
     describe("when TLD is not common") {
       it("should put it on first position") {
-        WhoisService.commonTLDs(Some("ru")) should be(
+        whoisService.commonTLDs(Some("ru")) should be(
           NonEmptyList.of[TLD]("ru", "com", "net", "org", "co", "io", "app"))
       }
     }
 
     describe("when TLD is not given") {
       it("should not modify order") {
-        WhoisService.commonTLDs(None) should be(NonEmptyList.of[TLD]("com", "net", "org", "co", "io", "app"))
+        whoisService.commonTLDs(None) should be(NonEmptyList.of[TLD]("com", "net", "org", "co", "io", "app"))
       }
     }
   }
