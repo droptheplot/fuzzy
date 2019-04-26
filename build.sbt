@@ -12,8 +12,9 @@ scalaVersion := "2.12.8"
 
 scalacOptions += "-Ypartial-unification"
 
-libraryDependencies += "com.typesafe.akka" %% "akka-http"   % "10.1.5"
+libraryDependencies += "com.typesafe.akka" %% "akka-http" % "10.1.5"
 libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.5.12"
+libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % "2.5.22" % Test
 libraryDependencies += "com.typesafe.akka" %% "akka-http-spray-json" % "10.1.5"
 
 libraryDependencies += "org.http4s" %% "http4s-blaze-server" % "0.19.0"

@@ -12,7 +12,7 @@ import scala.util.Try
 object Database {
   implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
 
-  def apply(config: Config): Transactor.Aux[IO, Unit] = {
+  def apply(config: Config): Transactor.Aux[IO, _] = {
     Transactor.fromDriverManager[IO](
       config.env.jdbc.driver,
       config.env.jdbc.url,

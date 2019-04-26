@@ -26,5 +26,5 @@ class DomainActor extends Actor {
 }
 
 object DomainActor {
-  final case class CreateMessage(response: SearchResponse, db: Transactor.Aux[IO, Unit], logger: Logger)
+  final case class CreateMessage(response: SearchResponse, db: Transactor.Aux[IO, _], logger: Logger)
 }

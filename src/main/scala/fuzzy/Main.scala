@@ -21,7 +21,7 @@ object Main extends IOApp {
       case (Right(config), Success(serverMap)) =>
         val system: ActorSystem = ActorSystem()
         val logger: Logger = LoggerFactory.getLogger(Main.getClass)
-        val db: Transactor.Aux[IO, Unit] = Database(config)
+        val db: Transactor.Aux[IO, _] = Database(config)
         val domainActor: ActorRef = system.actorOf(Props[DomainActor])
 
         Database.migrate(config)

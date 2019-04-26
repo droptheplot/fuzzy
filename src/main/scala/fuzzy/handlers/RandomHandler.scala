@@ -9,7 +9,7 @@ import org.http4s.headers.Location
 import org.slf4j.Logger
 
 class RandomHandler()(implicit whoisUsecase: WhoisUsecaseTrait) {
-  def apply()(implicit logger: Logger, db: Transactor.Aux[IO, Unit]): IO[Response[IO]] =
+  def apply()(implicit logger: Logger, db: Transactor.Aux[IO, _]): IO[Response[IO]] =
     whoisUsecase.random().flatMap {
       case Some(searchResponse) =>
         SeeOther(Location(Uri(path = "/search", query = Query.fromPairs(("query", searchResponse.sld)))))

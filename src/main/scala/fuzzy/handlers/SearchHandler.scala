@@ -19,7 +19,7 @@ class SearchHandler()(implicit whoisUsecase: WhoisUsecaseTrait) {
 
   def html(searchRequest: SearchRequest)(implicit logger: Logger,
                                          domainActor: ActorRef,
-                                         db: Transactor.Aux[IO, Unit]): IO[Response[IO]] = {
+                                         db: Transactor.Aux[IO, _]): IO[Response[IO]] = {
     whoisUsecase.search(searchRequest).flatMap { result =>
       val template = LayoutTemplate(s"Search: ${searchRequest.query}", SearchTemplate(searchRequest, result)).toString
 
@@ -29,7 +29,7 @@ class SearchHandler()(implicit whoisUsecase: WhoisUsecaseTrait) {
 
   def api(searchRequest: SearchRequest)(implicit logger: Logger,
                                         domainActor: ActorRef,
-                                        db: Transactor.Aux[IO, Unit]): IO[Response[IO]] = {
+                                        db: Transactor.Aux[IO, _]): IO[Response[IO]] = {
     whoisUsecase.search(searchRequest).flatMap { result =>
       Ok(result.asJson.noSpaces, `Content-Type`(MediaType.application.json))
     }

@@ -10,7 +10,7 @@ trait WhoisUsecaseTrait {
   def search(searchRequest: SearchRequest)(
       implicit logger: Logger,
       domainActor: ActorRef,
-      db: Transactor.Aux[IO, Unit],
+      db: Transactor.Aux[IO, _],
   ): IO[Seq[SearchResponse]]
-  def random()(implicit db: Transactor.Aux[IO, Unit]): IO[Option[SearchResponse]]
+  def random()(implicit db: Transactor.Aux[IO, _]): IO[Option[SearchResponse]]
 }

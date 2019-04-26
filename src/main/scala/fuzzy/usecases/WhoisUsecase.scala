@@ -23,7 +23,7 @@ class WhoisUsecase()(implicit whoisService: WhoisServiceTrait,
   def search(searchRequest: SearchRequest)(
       implicit logger: Logger,
       domainActor: ActorRef,
-      db: Transactor.Aux[IO, Unit],
+      db: Transactor.Aux[IO, _],
   ): IO[Seq[SearchResponse]] =
     whoisService.parseDomain(searchRequest.query, serverMap) match {
       case Some(Domain(sld, tld)) =>
@@ -44,7 +44,7 @@ class WhoisUsecase()(implicit whoisService: WhoisServiceTrait,
       case None => IO.pure(Seq[SearchResponse]())
     }
 
-  def random()(implicit db: Transactor.Aux[IO, Unit]): IO[Option[SearchResponse]] =
+  def random()(implicit db: Transactor.Aux[IO, _]): IO[Option[SearchResponse]] =
     domainRepository.random().transact(db)
 
   private def fetch(commonTLDs: NonEmptyList[TLD], sld: String, cache: Set[SearchResponse])(

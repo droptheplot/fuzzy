@@ -23,7 +23,7 @@ object WebServer {
                             system: ActorSystem,
                             logger: Logger,
                             domainActor: ActorRef,
-                            db: Transactor.Aux[IO, Unit]): IO[ExitCode] = {
+                            db: Transactor.Aux[IO, _]): IO[ExitCode] = {
     object QueryParamMatcher extends QueryParamDecoderMatcher[String]("query")
 
     implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
