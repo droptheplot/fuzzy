@@ -1,19 +1,17 @@
 package fuzzy
 
-import cats.effect.{ContextShift, IO}
+import cats.effect.{ConcurrentEffect, ContextShift}
+import cats.Applicative
 import doobie.util.transactor.Transactor
 import fuzzy.entities.Config
 import org.flywaydb.core.Flyway
 import pureconfig.generic.auto._
 
-import scala.concurrent.ExecutionContext
 import scala.util.Try
 
-object Database {
-  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
-
-  def apply(config: Config): Transactor.Aux[IO, _] = {
-    Transactor.fromDriverManager[IO](
+class Database[F[_]: Applicative: ContextShift: ConcurrentEffect] {
+  def run(config: Config): Transactor.Aux[F, _] = {
+    Transactor.fromDriverManager[F](
       config.env.jdbc.driver,
       config.env.jdbc.url,
       config.env.jdbc.user,

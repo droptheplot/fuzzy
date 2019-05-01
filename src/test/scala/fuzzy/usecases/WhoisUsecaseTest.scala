@@ -29,7 +29,7 @@ class WhoisUsecaseTest
 
   implicit val echoRef: ActorRef = system.actorOf(TestActors.echoActorProps)
 
-  implicit val db: Transactor.Aux[IO, _] =
+  implicit val xa: Transactor.Aux[IO, _] =
     Transactor
       .fromConnection[IO](null, null)
       .copy(strategy0 = Strategy.void)
@@ -49,7 +49,7 @@ class WhoisUsecaseTest
   implicit var domainRepository: DomainRepositoryTrait = _
   implicit var logger: Logger = _
 
-  var whoisUsecase: WhoisUsecaseTrait = _
+  var whoisUsecase: WhoisUsecaseTrait[IO] = _
 
   override def beforeEach(): Unit = {
     whoisService = mock[WhoisService]

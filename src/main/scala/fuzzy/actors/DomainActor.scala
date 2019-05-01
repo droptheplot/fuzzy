@@ -10,7 +10,7 @@ import org.slf4j.Logger
 
 class DomainActor extends Actor {
   def receive: PartialFunction[Any, Unit] = {
-    case DomainActor.CreateMessage(response, db, logger) =>
+    case DomainActor.CreateMessage(response, xa, logger) =>
       val domainRepository: DomainRepositoryTrait = new DomainRepository()
 
       (for {
@@ -19,12 +19,12 @@ class DomainActor extends Actor {
         domainId <- domainRepository.create(sldId, tldId, response.status.value, response.raw)
       } yield {
         logger.info(s"DomainActor.receive id=$domainId sld=${response.sld}, tld=${response.tld}")
-      }).transact(db).unsafeRunSync()
+      }).transact(xa).unsafeRunSync()
 
     case _ => throw new IllegalArgumentException("Invalid message.")
   }
 }
 
 object DomainActor {
-  final case class CreateMessage(response: SearchResponse, db: Transactor.Aux[IO, _], logger: Logger)
+  final case class CreateMessage(response: SearchResponse, xa: Transactor.Aux[IO, _], logger: Logger)
 }

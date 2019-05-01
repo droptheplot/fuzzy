@@ -6,11 +6,11 @@ import doobie.util.transactor.Transactor
 import fuzzy.entities.{SearchRequest, SearchResponse}
 import org.slf4j.Logger
 
-trait WhoisUsecaseTrait {
+trait WhoisUsecaseTrait[F[_]] {
   def search(searchRequest: SearchRequest)(
       implicit logger: Logger,
       domainActor: ActorRef,
-      db: Transactor.Aux[IO, _],
-  ): IO[Seq[SearchResponse]]
-  def random()(implicit db: Transactor.Aux[IO, _]): IO[Option[SearchResponse]]
+      xa: Transactor.Aux[IO, _],
+  ): F[Seq[SearchResponse]]
+  def random()(implicit xa: Transactor.Aux[IO, _]): F[Option[SearchResponse]]
 }

@@ -19,14 +19,20 @@ object Main extends IOApp {
 
     (maybeConfig, maybeServerMap) match {
       case (Right(config), Success(serverMap)) =>
+        val db: Database[IO] = new Database[IO]()
         val system: ActorSystem = ActorSystem()
         val logger: Logger = LoggerFactory.getLogger(Main.getClass)
-        val db: Transactor.Aux[IO, _] = Database(config)
+        val xa: Transactor.Aux[IO, _] = db.run(config)
         val domainActor: ActorRef = system.actorOf(Props[DomainActor])
 
-        Database.migrate(config)
+        db.migrate(config)
 
-        WebServer(config)(serverMap, system, logger, domainActor, db)
+        new WebServer[IO]()
+          .run(config)(serverMap, system, logger, domainActor, xa)
+          .compile
+          .drain
+          .map(_ => ExitCode.Success)
+
       case (_, _) => IO(ExitCode.Error)
     }
   }
